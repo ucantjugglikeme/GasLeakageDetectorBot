@@ -1,7 +1,6 @@
 import sys
 import os
 import asyncio
-import aiomqtt
 import logging
 
 from aiogram import Bot, Dispatcher
@@ -11,27 +10,20 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import data
 from handlers import router
+import utils
 
 
-GAS_TOPIC = "gas-leak-detection/+/+/gas-data"
 background_tasks = set()
 
-
-async def mqtt_listen():
-    async with aiomqtt.Client(
-        data["mqtt_server"], 
-        username=data["mqtt_user"], 
-        password=data["mqtt_pass"]
-    ) as client:
-        await client.subscribe(GAS_TOPIC)
-        async for message in client.messages:
-            print(message.payload)
+# TODO: add test scripts for db
+# TODO: add async mysql lib
+# TODO: add handler for mqtt data
 
 
 async def main():
     loop = asyncio.get_event_loop()
     # Listen for mqtt messages in an (unawaited) asyncio task
-    task = loop.create_task(mqtt_listen())
+    task = loop.create_task(utils.mqtt_listen())
     # Save a reference to the task so it doesn't get garbage collected
     background_tasks.add(task)
     task.add_done_callback(background_tasks.remove)
