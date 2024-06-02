@@ -10,18 +10,21 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import data
 from handlers import router
+from db import set_loop
 import utils
 
 
+loop: asyncio.AbstractEventLoop | None = None
 background_tasks = set()
 
-# TODO: add test scripts for db
+# DB scripts were added
 # TODO: add async mysql lib
 # TODO: add handler for mqtt data
 
 
 async def main():
     loop = asyncio.get_event_loop()
+    set_loop(loop)
     # Listen for mqtt messages in an (unawaited) asyncio task
     task = loop.create_task(utils.mqtt_listen())
     # Save a reference to the task so it doesn't get garbage collected
