@@ -9,32 +9,28 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import data
-from handlers import router
-from db import set_loop
 import utils
 
 
-loop: asyncio.AbstractEventLoop | None = None
-background_tasks = set()
+# TODO: add gracefull close for session
 
-# DB scripts were added
-# TODO: add async mysql lib
-# TODO: add handler for mqtt data
+
+bot = Bot(  
+    token=data["bot_token"], 
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+)
+background_tasks = set()
 
 
 async def main():
     loop = asyncio.get_event_loop()
-    set_loop(loop)
     # Listen for mqtt messages in an (unawaited) asyncio task
     task = loop.create_task(utils.mqtt_listen())
     # Save a reference to the task so it doesn't get garbage collected
     background_tasks.add(task)
     task.add_done_callback(background_tasks.remove)
 
-    bot = Bot(  
-        token=data["bot_token"], 
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-    )
+    from handlers import router
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(router)
     await bot.delete_webhook(drop_pending_updates=True)

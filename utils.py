@@ -1,4 +1,5 @@
 import aiomqtt
+import json
 
 from config import data
 
@@ -14,4 +15,7 @@ async def mqtt_listen():
     ) as client:
         await client.subscribe(GAS_TOPIC)
         async for message in client.messages:
-            print(message.payload)
+            answ = json.loads(message.payload)
+            from handlers import send_mqtt_alert
+            if answ["gas-leakage"]:
+               await send_mqtt_alert(answ)
